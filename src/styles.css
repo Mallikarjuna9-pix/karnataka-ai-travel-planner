@@ -1,0 +1,480 @@
+import { useEffect, useState } from 'react';
+
+const STORAGE_KEY = 'karnataka-planner-state-v1';
+
+const DEFAULT_FORM = {
+  travelerName: 'Aarav',
+  days: '5',
+  budget: 'mid-range',
+  interests: 'nature',
+  season: 'monsoon',
+  style: 'friends',
+};
+
+const DESTINATIONS = [
+  {
+    id: 'heritage',
+    name: 'Heritage & Culture',
+    region: 'Hampi • Mysuru • Badami',
+    image:
+      'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=900&q=80',
+    description: 'Temple towns, royal palaces, and stories of a glorious past.',
+  },
+  {
+    id: 'nature',
+    name: 'Nature Escapes',
+    region: 'Coorg • Chikmagalur • Sakleshpur',
+    image:
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=900&q=80',
+    description: 'Coffee hills, waterfall trails, and misty viewpoints.',
+  },
+  {
+    id: 'wildlife',
+    name: 'Wildlife Trails',
+    region: 'Bandipur • Nagarhole • Kabini',
+    image:
+      'https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=900&q=80',
+    description: 'Safari drives and forest stays for memorable wildlife moments.',
+  },
+  {
+    id: 'beach',
+    name: 'Coastal Retreat',
+    region: 'Gokarna • Murudeshwar • Udupi',
+    image:
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80',
+    description: 'Golden beaches, spiritual stops, and breezy coastal vibes.',
+  },
+  {
+    id: 'food',
+    name: 'Foodie Circuit',
+    region: 'Mysuru • Udupi • Coorg',
+    image:
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80',
+    description: 'Regional flavours, local homes, and iconic Karnataka dishes.',
+  },
+  {
+    id: 'adventure',
+    name: 'Adventure & Trek',
+    region: 'Tadiandamol • Kemmanagundi • Western Ghats',
+    image:
+      'https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=900&q=80',
+    description: 'Trekking routes, river thrills, and scenic outdoor adventures.',
+  },
+];
+
+const INTEREST_MAP = {
+  heritage: {
+    title: 'Heritage & Culture Circuit',
+    summary: 'Discover royal architecture, ancient ruins, and vibrant traditions.',
+    highlights: ['Hampi ruins', 'Mysuru palace', 'Badami caves', 'Aihole heritage route'],
+  },
+  nature: {
+    title: 'Nature & Scenic Escape',
+    summary: 'Enjoy lush forests, winding roads, and misty hill views.',
+    highlights: ['Coorg coffee estates', 'Abbey Falls', 'Chikmagalur hills', 'Brahmagiri viewpoints'],
+  },
+  wildlife: {
+    title: 'Wildlife Safari Route',
+    summary: 'Plan safari experiences, forest drives, and dramatic sightings.',
+    highlights: ['Bandipur safari', 'Kabini boat ride', 'Nagarhole forest drive', 'Elephant spotting'],
+  },
+  beach: {
+    title: 'Beach & Coastal Retreat',
+    summary: 'Pair relaxed shores with temple visits and seafood delights.',
+    highlights: ['Gokarna beaches', 'Om Beach', 'Murudeshwar temple', 'Udupi coast'],
+  },
+  food: {
+    title: 'Foodie Karnataka Trail',
+    summary: 'Taste iconic dishes and discover local culinary stories.',
+    highlights: ['Mysuru dosa', 'Udupi meals', 'Bisi Bele Bath', 'Coorg coffee tasting'],
+  },
+  adventure: {
+    title: 'Adventure & Trekking Loop',
+    summary: 'Blend scenic trails with exciting outdoor activities.',
+    highlights: ['Tadiandamol trek', 'Kemmanagundi viewpoints', 'River rafting', 'Zipline adventure'],
+  },
+};
+
+function getInitialState() {
+  if (typeof window === 'undefined') return { form: DEFAULT_FORM, plan: null, chat: [] };
+
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (!stored) return { form: DEFAULT_FORM, plan: null, chat: [] };
+
+    const parsed = JSON.parse(stored);
+    return {
+      form: { ...DEFAULT_FORM, ...(parsed.form || {}) },
+      plan: parsed.plan || null,
+      chat: parsed.chat || [
+        {
+          role: 'assistant',
+          text: 'Hi! I can build a tailored Karnataka route based on your interests and travel style.',
+        },
+      ],
+    };
+  } catch (error) {
+    return { form: DEFAULT_FORM, plan: null, chat: [] };
+  }
+}
+
+function getBudgetText(budget) {
+  const map = {
+    'budget-friendly': 'comfortable, cost-conscious stays with local experiences',
+    'mid-range': 'balanced comfort with premium local stays and curated activities',
+    luxury: 'luxury stays, private transfers, and elevated experiences',
+  };
+
+  return map[budget] || map['mid-range'];
+}
+
+function buildPlan(form) {
+  const route = INTEREST_MAP[form.interests] || INTEREST_MAP.heritage;
+  const travelerName = form.travelerName.trim() || 'Traveller';
+  const totalDays = Number(form.days || 5);
+  const cards = [];
+
+  for (let index = 1; index <= Math.min(totalDays, 7); index += 1) {
+    const highlight = route.highlights[(index - 1) % route.highlights.length];
+    const travelMood =
+      form.style === 'family'
+        ? 'Family-friendly stops and easy paced activities'
+        : form.style === 'couple'
+          ? 'Romantic experiences and scenic moments together'
+          : form.style === 'solo'
+            ? 'Flexible solo exploration and self-guided discovery'
+            : 'Fun shared adventures and social experiences';
+
+    const weatherNote =
+      form.season === 'monsoon'
+        ? 'Use the cool, green weather for viewpoints and waterfall stops.'
+        : form.season === 'summer'
+          ? 'Plan early starts to enjoy cooler mornings and scenic drives.'
+          : form.season === 'winter'
+            ? 'Ideal for sightseeing, outdoor walks, and lush landscapes.'
+            : 'A comfortable period for relaxed exploring and local experiences.';
+
+    cards.push({
+      title: `Day ${index}`,
+      items: [
+        `Begin with a warm local breakfast and head to ${highlight}.`,
+        'Visit the region’s signature landmarks, food spots, or scenic viewpoints.',
+        travelMood,
+        weatherNote,
+      ],
+    });
+  }
+
+  return {
+    title: `${travelerName}'s Karnataka escape`,
+    routeTitle: route.title,
+    summary: `A ${form.days}-day itinerary focused on ${route.summary.toLowerCase()} for a ${form.style} trip in ${form.season}.`,
+    budget: getBudgetText(form.budget),
+    cards,
+  };
+}
+
+function buildAssistantReply(form, plan, question) {
+  const selectedInterest = INTEREST_MAP[form.interests] || INTEREST_MAP.heritage;
+  const lower = (question || '').toLowerCase();
+
+  if (lower.includes('food') || lower.includes('eat')) {
+    return `For your ${form.style} trip, I’d recommend a local food trail around ${selectedInterest.highlights[0]} and nearby food markets. Karnataka’s must-tries are dosas, filter coffee, bisi bele bath, and coastal seafood depending on your route.`;
+  }
+
+  if (lower.includes('stay') || lower.includes('hotel') || lower.includes('rooms')) {
+    return `For a ${form.budget} plan, I’d choose a boutique stay close to your main destination cluster. This keeps travel time short and adds more comfort for the first and last day of the itinerary.`;
+  }
+
+  if (lower.includes('best') || lower.includes('recommend')) {
+    return `The strongest route for your plan is to focus on ${selectedInterest.highlights.join(', ')} with a relaxed pace. This gives you a premium mix of scenery, culture, and memorable experiences without rushing the trip.`;
+  }
+
+  if (lower.includes('budget')) {
+    return `Your ${form.budget} itinerary should balance comfort with local experiences. Prioritize one premium experience and keep the rest of the trip in boutique stays, local food stops, and scenic drives.`;
+  }
+
+  return `I’ve shaped your route around ${selectedInterest.title.toLowerCase()} with a ${form.days}-day plan, ${form.budget} travel preferences, and a ${form.style} pace. The current itinerary balances iconic stops, convenience, and relaxed exploration.`;
+}
+
+function App() {
+  const initialState = getInitialState();
+  const [form, setForm] = useState(initialState.form);
+  const [plan, setPlan] = useState(initialState.plan || buildPlan(initialState.form));
+  const [chat, setChat] = useState(initialState.chat);
+  const [draft, setDraft] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          form,
+          plan,
+          chat,
+        })
+      );
+    }
+  }, [form, plan, chat]);
+
+  const selectedDestination =
+    DESTINATIONS.find((destination) => destination.id === form.interests) || DESTINATIONS[0];
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((previous) => ({ ...previous, [name]: value }));
+  };
+
+  const handleGenerate = (event) => {
+    event.preventDefault();
+    const nextPlan = buildPlan(form);
+    setPlan(nextPlan);
+    setChat((previous) => [
+      ...previous,
+      {
+        role: 'assistant',
+        text: `I’ve refreshed your itinerary for a ${form.days}-day ${form.style} trip with a ${form.budget} budget and a ${form.interests} focus.`,
+      },
+    ]);
+  };
+
+  const handleChatSubmit = (event) => {
+    event.preventDefault();
+    const value = draft.trim();
+    if (!value) return;
+
+    setChat((previous) => [...previous, { role: 'user', text: value }]);
+    setDraft('');
+
+    window.setTimeout(() => {
+      setChat((previous) => [
+        ...previous,
+        {
+          role: 'assistant',
+          text: buildAssistantReply(form, plan, value),
+        },
+      ]);
+    }, 250);
+  };
+
+  return (
+    <div className="app-shell">
+      <header className="topbar">
+        <div className="container nav-bar">
+          <div className="brand-wrap">
+            <span className="brand-mark">K</span>
+            <span>Karnataka Trails</span>
+          </div>
+          <nav className="main-nav">
+            <a href="#planner">Planner</a>
+            <a href="#destinations">Destinations</a>
+            <a href="#itinerary">Itinerary</a>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        <section className="hero-section">
+          <div className="hero-backdrop" />
+          <div className="container hero-grid">
+            <div className="hero-copy">
+              <p className="eyebrow">Curated for Karnataka</p>
+              <h1>AI-powered travel planning for your perfect getaway.</h1>
+              <p className="lead">
+                Build a personalized Karnataka trip based on your interests, pace, budget,
+                and the type of experiences you want to remember.
+              </p>
+              <div className="badge-row">
+                <span>Heritage</span>
+                <span>Wildlife</span>
+                <span>Beach</span>
+                <span>Hill station</span>
+              </div>
+            </div>
+
+            <form className="planner-panel" id="planner" onSubmit={handleGenerate}>
+              <div className="field-group">
+                <label htmlFor="travelerName">Traveller name</label>
+                <input
+                  id="travelerName"
+                  name="travelerName"
+                  type="text"
+                  value={form.travelerName}
+                  onChange={handleChange}
+                  placeholder="Aarav"
+                />
+              </div>
+
+              <div className="field-row">
+                <div className="field-group">
+                  <label htmlFor="days">Trip duration</label>
+                  <select id="days" name="days" value={form.days} onChange={handleChange}>
+                    <option value="3">3 days</option>
+                    <option value="5">5 days</option>
+                    <option value="7">7 days</option>
+                    <option value="10">10 days</option>
+                  </select>
+                </div>
+
+                <div className="field-group">
+                  <label htmlFor="budget">Budget</label>
+                  <select id="budget" name="budget" value={form.budget} onChange={handleChange}>
+                    <option value="budget-friendly">Budget-friendly</option>
+                    <option value="mid-range">Mid-range</option>
+                    <option value="luxury">Luxury</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="field-row">
+                <div className="field-group">
+                  <label htmlFor="interests">Interests</label>
+                  <select
+                    id="interests"
+                    name="interests"
+                    value={form.interests}
+                    onChange={handleChange}
+                  >
+                    <option value="heritage">Heritage & culture</option>
+                    <option value="nature">Nature & scenic</option>
+                    <option value="wildlife">Wildlife & safari</option>
+                    <option value="beach">Beaches & coast</option>
+                    <option value="food">Food & local experiences</option>
+                    <option value="adventure">Adventure & trekking</option>
+                  </select>
+                </div>
+
+                <div className="field-group">
+                  <label htmlFor="season">Season</label>
+                  <select id="season" name="season" value={form.season} onChange={handleChange}>
+                    <option value="winter">Winter</option>
+                    <option value="summer">Summer</option>
+                    <option value="monsoon">Monsoon</option>
+                    <option value="post-monsoon">Post-monsoon</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="field-group">
+                <label htmlFor="style">Travel style</label>
+                <select id="style" name="style" value={form.style} onChange={handleChange}>
+                  <option value="family">Family</option>
+                  <option value="couple">Couple</option>
+                  <option value="friends">Friends</option>
+                  <option value="solo">Solo</option>
+                </select>
+              </div>
+
+              <button className="primary-button" type="submit">
+                Generate itinerary
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <section className="destination-section" id="destinations">
+          <div className="container">
+            <div className="section-heading">
+              <p className="eyebrow secondary">Popular routes</p>
+              <h2>Find your ideal Karnataka experience</h2>
+            </div>
+
+            <div className="destination-grid">
+              {DESTINATIONS.map((destination) => (
+                <article
+                  key={destination.id}
+                  className={`destination-card ${selectedDestination.id === destination.id ? 'active' : ''}`}
+                >
+                  <img src={destination.image} alt={destination.name} />
+                  <div className="destination-body">
+                    <p className="destination-region">{destination.region}</p>
+                    <h3>{destination.name}</h3>
+                    <p>{destination.description}</p>
+                    <button
+                      type="button"
+                      className="text-button"
+                      onClick={() => setForm((previous) => ({ ...previous, interests: destination.id }))}
+                    >
+                      Select route
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="itinerary-section" id="itinerary">
+          <div className="container itinerary-layout">
+            <div className="itinerary-panel">
+              <div className="panel-header">
+                <div>
+                  <p className="eyebrow secondary">Trip summary</p>
+                  <h2>{plan.title}</h2>
+                </div>
+                <span className="pill">{plan.routeTitle}</span>
+              </div>
+
+              <p className="summary-copy">{plan.summary}</p>
+
+              <div className="trip-meta">
+                <span>Budget: {plan.budget}</span>
+                <span>Style: {form.style}</span>
+                <span>Season: {form.season}</span>
+              </div>
+
+              <div className="day-grid">
+                {plan.cards.map((day) => (
+                  <article key={day.title} className="day-card">
+                    <h3>{day.title}</h3>
+                    <ul>
+                      {day.items.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <aside className="chat-panel">
+              <div className="chat-header">
+                <div>
+                  <p className="eyebrow secondary">AI travel assistant</p>
+                  <h3>Ask about your plan</h3>
+                </div>
+              </div>
+
+              <div className="chat-thread">
+                {chat.map((entry, index) => (
+                  <div key={`${entry.role}-${index}`} className={`chat-bubble ${entry.role}`}>
+                    <p>{entry.text}</p>
+                  </div>
+                ))}
+              </div>
+
+              <form className="chat-form" onSubmit={handleChatSubmit}>
+                <input
+                  type="text"
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value)}
+                  placeholder="Ask for food spots, stay ideas, or route tweaks..."
+                />
+                <button type="submit">Send</button>
+              </form>
+            </aside>
+          </div>
+        </section>
+      </main>
+
+      <footer className="footer">
+        <div className="container footer-inner">
+          <p>© 2026 Karnataka Trails</p>
+          <p>Made for unforgettable journeys across Karnataka</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default App;
