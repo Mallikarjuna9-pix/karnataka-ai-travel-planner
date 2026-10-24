@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Karnataka AI Travel Planner</title>
+    <meta
+      name="description"
+      content="AI-style travel planner for personalized Karnataka itineraries."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav">
+        <div class="brand">
+          <span class="brand-mark">K</span>
+          <span>Karnataka Trails</span>
+        </div>
+        <nav>
+          <a href="#planner">Planner</a>
+          <a href="#highlights">Highlights</a>
+          <a href="#itinerary">Itinerary</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Personalized Karnataka getaway</p>
+            <h1>Build your ideal Karnataka holiday in minutes.</h1>
+            <p class="lead">
+              Discover the best of Karnataka based on your interests, trip length,
+              budget, and preferred travel style.
+            </p>
+            <div class="hero-badges">
+              <span>Heritage</span>
+              <span>Wildlife</span>
+              <span>Beaches</span>
+              <span>Hill Stations</span>
+            </div>
+          </div>
+
+          <div class="planner-card" id="planner">
+            <form id="trip-form">
+              <div class="field-group">
+                <label for="travelerName">Traveller name</label>
+                <input id="travelerName" name="travelerName" type="text" placeholder="e.g. Aarav" />
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label for="days">Trip duration</label>
+                  <select id="days" name="days">
+                    <option value="3">3 days</option>
+                    <option value="5" selected>5 days</option>
+                    <option value="7">7 days</option>
+                    <option value="10">10 days</option>
+                  </select>
+                </div>
+
+                <div class="field-group">
+                  <label for="budget">Budget</label>
+                  <select id="budget" name="budget">
+                    <option value="budget-friendly">Budget-friendly</option>
+                    <option value="mid-range" selected>Mid-range</option>
+                    <option value="luxury">Luxury</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label for="interests">Primary interests</label>
+                <select id="interests" name="interests">
+                  <option value="heritage">Heritage & culture</option>
+                  <option value="nature">Nature & scenic escapes</option>
+                  <option value="wildlife">Wildlife & safari</option>
+                  <option value="beach">Beaches & coast</option>
+                  <option value="food">Food & local experiences</option>
+                  <option value="adventure">Adventure & trekking</option>
+                  <option value="wellness">Wellness & spiritual travel</option>
+                </select>
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label for="season">Best season</label>
+                  <select id="season" name="season">
+                    <option value="winter">Winter</option>
+                    <option value="summer">Summer</option>
+                    <option value="monsoon" selected>Monsoon</option>
+                    <option value="post-monsoon">Post-monsoon</option>
+                  </select>
+                </div>
+
+                <div class="field-group">
+                  <label for="style">Travel style</label>
+                  <select id="style" name="style">
+                    <option value="family">Family</option>
+                    <option value="couple">Couple</option>
+                    <option value="friends" selected>Friends</option>
+                    <option value="solo">Solo</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" class="primary-btn">Generate itinerary</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="highlights" id="highlights">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Why Karnataka?</p>
+            <h2>From royal palaces to lush Western Ghats</h2>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-card">
+              <div class="icon">🏛️</div>
+              <h3>Heritage</h3>
+              <p>Explore Hampi, Mysuru, Badami, and centuries-old temples.</p>
+            </article>
+            <article class="feature-card">
+              <div class="icon">🌿</div>
+              <h3>Nature</h3>
+              <p>Enjoy coffee plantations, waterfalls, and misty hills.</p>
+            </article>
+            <article class="feature-card">
+              <div class="icon">🦁</div>
+              <h3>Wildlife</h3>
+              <p>Spot tigers, elephants, and birds in Karnataka’s forests.</p>
+            </article>
+            <article class="feature-card">
+              <div class="icon">🌊</div>
+              <h3>Coastline</h3>
+              <p>Experience pristine beaches from Gokarna to Udupi.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="itinerary-section" id="itinerary">
+        <div class="container">
+          <div class="section-heading left">
+            <p class="eyebrow">Trip summary</p>
+            <h2>Your custom itinerary</h2>
+          </div>
+
+          <div id="output" class="output-card">
+            <div class="placeholder-box">
+              <h3>Ready for your next adventure</h3>
+              <p>
+                Fill out the planner to generate a tailored 3–10 day Karnataka itinerary.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <p>© 2026 Karnataka Trails</p>
+        <p>Designed for unforgettable journeys across Karnataka</p>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
